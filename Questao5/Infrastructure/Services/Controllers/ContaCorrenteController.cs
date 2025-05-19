@@ -10,6 +10,7 @@ namespace Questao5.Infrastructure.Services.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     public class ContaCorrenteController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -20,11 +21,15 @@ namespace Questao5.Infrastructure.Services.Controllers
         }
 
         /// <summary>
-        /// Realiza um movimento (crédito ou débito) na conta corrente.
+        /// Realiza uma movimentação de crédito ou débito em uma conta corrente.
         /// </summary>
-        [HttpPost("Movimentar")]
-        [ProducesResponseType(typeof(Guid), 200)]
-        [ProducesResponseType(typeof(object), 400)]
+        /// <param name="command">Dados da movimentação: id da conta, valor, tipo e chave de idempotência.</param>
+        /// <returns>Retorna o ID do movimento criado em caso de sucesso.</returns>
+        /// <response code="200">Movimentação realizada com sucesso.</response>
+        /// <response code="400">Erro de validação, conta inativa ou inexistente, valor ou tipo inválido.</response>
+        [HttpPost("movimentar")]
+        [ProducesResponseType(typeof(CustomResult<Guid>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CustomResult<object>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Movimentar([FromBody] CriarMovimentoCommand command)
         {
             var resultado = await _mediator.Send(command);
@@ -32,12 +37,15 @@ namespace Questao5.Infrastructure.Services.Controllers
         }
 
         /// <summary>
-        /// Retorna o saldo atual da conta corrente.
-        /// O id é um Guid version uuid 4
+        /// Consulta o saldo atual de uma conta corrente ativa.
         /// </summary>
-        [HttpGet("Saldo/{id}")]
-        [ProducesResponseType(typeof(SaldoResponse), 200)]
-        [ProducesResponseType(typeof(object), 400)]
+        /// <param name="id">ID da conta corrente (formato UUID v4).</param>
+        /// <returns>Retorna os dados da conta e o saldo atual.</returns>
+        /// <response code="200">Saldo retornado com sucesso.</response>
+        /// <response code="400">Conta inativa ou não encontrada.</response>
+        [HttpGet("saldo/{id}")]
+        [ProducesResponseType(typeof(CustomResult<SaldoResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CustomResult<object>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ConsultarSaldo(Guid id)
         {
             var resultado = await _mediator.Send(new ConsultarSaldoQuery { IdContaCorrente = id });
