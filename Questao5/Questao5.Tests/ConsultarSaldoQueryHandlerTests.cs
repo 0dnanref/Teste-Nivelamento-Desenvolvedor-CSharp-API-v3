@@ -67,7 +67,7 @@ namespace Questao5.Questao5.Tests
         [Fact]
         public async Task DeveLancarExcecaoSeContaEstiverInativa()
         {
-            // Arrange
+            
             var contaId = Guid.NewGuid();
 
             _contaRepo.ObterPorId(contaId).Returns(new ContaCorrente
@@ -81,7 +81,7 @@ namespace Questao5.Questao5.Tests
             var query = new ConsultarSaldoQuery { IdContaCorrente = contaId };
             var handler = CreateHandler();
 
-            // Act & Assert
+            
             var ex = await Assert.ThrowsAsync<BusinessException>(() => handler.Handle(query, default));
 
             ex.Tipo.Should().Be(TipoErro.INACTIVE_ACCOUNT);
